@@ -85,6 +85,7 @@ inline bool boolFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Boolean>();
 }
 inline std::string stringFromValue(const Napi::CallbackInfo& info, int index) {
+  printf("stringFromValue called\n");
   return info[index].As<Napi::String>().Utf8Value();
 }
 inline char charFromValue(const Napi::CallbackInfo& info, int index) {
