@@ -8607,7 +8607,7 @@ Napi::Value BindImageDraw(const Napi::CallbackInfo& info) {
 Napi::Value BindImageDrawText(const Napi::CallbackInfo& info) {
   Image obj = ImageFromValue(info, 0);
   ImageDrawText(
-    &obj, (const char *) stringFromValue(info, 5),
+    &obj, (const char *) stringFromValue(info, 5).c_str(),
        intFromValue(info, 6),
        intFromValue(info, 7),
        intFromValue(info, 8),
@@ -8620,7 +8620,7 @@ Napi::Value BindImageDrawTextEx(const Napi::CallbackInfo& info) {
   Image obj = ImageFromValue(info, 0);
   ImageDrawTextEx(
     &obj, FontFromValue(info, 5),
-       (const char *) stringFromValue(info, 15),
+       (const char *) stringFromValue(info, 15).c_str(),
        Vector2FromValue(info, 16),
        floatFromValue(info, 18),
        floatFromValue(info, 19),
