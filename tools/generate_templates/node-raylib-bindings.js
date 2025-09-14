@@ -85,7 +85,7 @@ const UnwrappedFuncArguments = (structs, func) => {
 
   return func.params
     .map((param) => {
-      const out = `${param.type.endsWith('*') ? ` (${param.type})` : ''} ${SanitizeTypeName(param.type)}FromValue(info, ${length})${param.type === 'const char *' ? '.c_str()' : ''}`
+      const out = `${param.type.endsWith('*') ? ` (${param.type})` : ''} ${SanitizeTypeName(param.type)}FromValue(info, ${length})`
       length += TypeUnwrappedLength(structs, param.type)
       return out
     })
@@ -267,8 +267,12 @@ inline unsigned long long unsignedlonglongFromValue(const Napi::CallbackInfo& in
 inline bool boolFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Boolean>();
 }
-inline std::string stringFromValue(const Napi::CallbackInfo& info, int index) {
-  return info[index].As<Napi::String>().Utf8Value();
+inline const char * stringFromValue(const Napi::CallbackInfo& info, int index) {
+  std::string val = info[index].As<Napi::String>().Utf8Value();
+  const std::string::size_type size = val.size();
+  char *buffer = new char[size + 1];   //we need extra char for NUL
+  memcpy(buffer, val.c_str(), size + 1);
+  return buffer;
 }
 inline char charFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Number>().Uint32Value();

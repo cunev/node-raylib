@@ -84,9 +84,12 @@ inline unsigned long long unsignedlonglongFromValue(const Napi::CallbackInfo& in
 inline bool boolFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Boolean>();
 }
-inline std::string stringFromValue(const Napi::CallbackInfo& info, int index) {
-  printf("stringFromValue called\n");
-  return info[index].As<Napi::String>().Utf8Value();
+inline const char * stringFromValue(const Napi::CallbackInfo& info, int index) {
+  std::string val = info[index].As<Napi::String>().Utf8Value();
+  const std::string::size_type size = val.size();
+  char *buffer = new char[size + 1];   //we need extra char for NUL
+  memcpy(buffer, val.c_str(), size + 1);
+  return buffer;
 }
 inline char charFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Number>().Uint32Value();
@@ -987,8 +990,8 @@ Napi::Value BindIsCursorOnScreen(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadShader(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadShader(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -996,8 +999,8 @@ Napi::Value BindLoadShader(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadShaderFromMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadShaderFromMemory(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -1014,7 +1017,7 @@ Napi::Value BindGetShaderLocation(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetShaderLocation(
        ShaderFromValue(info, 0),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 2)
     )
   );
 }
@@ -1023,7 +1026,7 @@ Napi::Value BindGetShaderLocationAttrib(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetShaderLocationAttrib(
        ShaderFromValue(info, 0),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 2)
     )
   );
 }
@@ -1165,7 +1168,7 @@ Napi::Value BindMemRealloc(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadFileData(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadFileData(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (int *) pointerFromValue(info, 1)
     )
   );
@@ -1174,7 +1177,7 @@ Napi::Value BindLoadFileData(const Napi::CallbackInfo& info) {
 Napi::Value BindSaveFileData(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     SaveFileData(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (void *) pointerFromValue(info, 1),
        intFromValue(info, 2)
     )
@@ -1186,7 +1189,7 @@ Napi::Value BindExportDataAsCode(const Napi::CallbackInfo& info) {
     ExportDataAsCode(
        (const unsigned char *) pointerFromValue(info, 0),
        intFromValue(info, 1),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 2)
     )
   );
 }
@@ -1194,7 +1197,7 @@ Napi::Value BindExportDataAsCode(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadFileText(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadFileText(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1202,7 +1205,7 @@ Napi::Value BindLoadFileText(const Napi::CallbackInfo& info) {
 Napi::Value BindSaveFileText(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     SaveFileText(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (char *) pointerFromValue(info, 1)
     )
   );
@@ -1211,7 +1214,7 @@ Napi::Value BindSaveFileText(const Napi::CallbackInfo& info) {
 Napi::Value BindFileExists(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     FileExists(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1219,7 +1222,7 @@ Napi::Value BindFileExists(const Napi::CallbackInfo& info) {
 Napi::Value BindDirectoryExists(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     DirectoryExists(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1227,8 +1230,8 @@ Napi::Value BindDirectoryExists(const Napi::CallbackInfo& info) {
 Napi::Value BindIsFileExtension(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     IsFileExtension(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -1236,7 +1239,7 @@ Napi::Value BindIsFileExtension(const Napi::CallbackInfo& info) {
 Napi::Value BindGetFileLength(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetFileLength(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1244,7 +1247,7 @@ Napi::Value BindGetFileLength(const Napi::CallbackInfo& info) {
 Napi::Value BindGetFileExtension(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetFileExtension(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1252,7 +1255,7 @@ Napi::Value BindGetFileExtension(const Napi::CallbackInfo& info) {
 Napi::Value BindGetFileName(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetFileName(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1260,7 +1263,7 @@ Napi::Value BindGetFileName(const Napi::CallbackInfo& info) {
 Napi::Value BindGetFileNameWithoutExt(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetFileNameWithoutExt(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1268,7 +1271,7 @@ Napi::Value BindGetFileNameWithoutExt(const Napi::CallbackInfo& info) {
 Napi::Value BindGetDirectoryPath(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetDirectoryPath(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1276,7 +1279,7 @@ Napi::Value BindGetDirectoryPath(const Napi::CallbackInfo& info) {
 Napi::Value BindGetPrevDirectoryPath(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetPrevDirectoryPath(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1300,7 +1303,7 @@ Napi::Value BindGetApplicationDirectory(const Napi::CallbackInfo& info) {
 Napi::Value BindMakeDirectory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     MakeDirectory(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1308,7 +1311,7 @@ Napi::Value BindMakeDirectory(const Napi::CallbackInfo& info) {
 Napi::Value BindChangeDirectory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ChangeDirectory(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1316,7 +1319,7 @@ Napi::Value BindChangeDirectory(const Napi::CallbackInfo& info) {
 Napi::Value BindIsPathFile(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     IsPathFile(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1324,7 +1327,7 @@ Napi::Value BindIsPathFile(const Napi::CallbackInfo& info) {
 Napi::Value BindIsFileNameValid(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     IsFileNameValid(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1332,7 +1335,7 @@ Napi::Value BindIsFileNameValid(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadDirectoryFiles(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadDirectoryFiles(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1340,8 +1343,8 @@ Napi::Value BindLoadDirectoryFiles(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadDirectoryFilesEx(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadDirectoryFilesEx(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str(),
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1),
        boolFromValue(info, 2)
     )
   );
@@ -1366,7 +1369,7 @@ Napi::Value BindLoadDroppedFiles(const Napi::CallbackInfo& info) {
 Napi::Value BindGetFileModTime(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetFileModTime(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1440,7 +1443,7 @@ Napi::Value BindComputeSHA1(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadAutomationEventList(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadAutomationEventList(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1449,7 +1452,7 @@ Napi::Value BindExportAutomationEventList(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportAutomationEventList(
        AutomationEventListFromValue(info, 0),
-       (const char *) stringFromValue(info, 3).c_str()
+       (const char *) stringFromValue(info, 3)
     )
   );
 }
@@ -1590,7 +1593,7 @@ Napi::Value BindGetGamepadAxisMovement(const Napi::CallbackInfo& info) {
 Napi::Value BindSetGamepadMappings(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     SetGamepadMappings(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1960,7 +1963,7 @@ Napi::Value BindGetCollisionRec(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadImage(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadImage(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -1968,7 +1971,7 @@ Napi::Value BindLoadImage(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadImageRaw(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadImageRaw(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        intFromValue(info, 1),
        intFromValue(info, 2),
        intFromValue(info, 3),
@@ -1980,7 +1983,7 @@ Napi::Value BindLoadImageRaw(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadImageAnim(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadImageAnim(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (int *) pointerFromValue(info, 1)
     )
   );
@@ -1989,7 +1992,7 @@ Napi::Value BindLoadImageAnim(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadImageAnimFromMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadImageAnimFromMemory(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (const unsigned char *) pointerFromValue(info, 1),
        intFromValue(info, 2),
        (int *) pointerFromValue(info, 3)
@@ -2000,7 +2003,7 @@ Napi::Value BindLoadImageAnimFromMemory(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadImageFromMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadImageFromMemory(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (const unsigned char *) pointerFromValue(info, 1),
        intFromValue(info, 2)
     )
@@ -2035,7 +2038,7 @@ Napi::Value BindExportImage(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportImage(
        ImageFromValue(info, 0),
-       (const char *) stringFromValue(info, 5).c_str()
+       (const char *) stringFromValue(info, 5)
     )
   );
 }
@@ -2044,7 +2047,7 @@ Napi::Value BindExportImageToMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportImageToMemory(
        ImageFromValue(info, 0),
-       (const char *) stringFromValue(info, 5).c_str(),
+       (const char *) stringFromValue(info, 5),
        (int *) pointerFromValue(info, 6)
     )
   );
@@ -2054,7 +2057,7 @@ Napi::Value BindExportImageAsCode(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportImageAsCode(
        ImageFromValue(info, 0),
-       (const char *) stringFromValue(info, 5).c_str()
+       (const char *) stringFromValue(info, 5)
     )
   );
 }
@@ -2155,7 +2158,7 @@ Napi::Value BindGenImageText(const Napi::CallbackInfo& info) {
     GenImageText(
        intFromValue(info, 0),
        intFromValue(info, 1),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 2)
     )
   );
 }
@@ -2189,7 +2192,7 @@ Napi::Value BindImageFromChannel(const Napi::CallbackInfo& info) {
 Napi::Value BindImageText(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ImageText(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        intFromValue(info, 1),
        ColorFromValue(info, 2)
     )
@@ -2200,7 +2203,7 @@ Napi::Value BindImageTextEx(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ImageTextEx(
        FontFromValue(info, 0),
-       (const char *) stringFromValue(info, 10).c_str(),
+       (const char *) stringFromValue(info, 10),
        floatFromValue(info, 11),
        floatFromValue(info, 12),
        ColorFromValue(info, 13)
@@ -2248,7 +2251,7 @@ Napi::Value BindGetImageColor(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadTexture(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadTexture(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2449,7 +2452,7 @@ Napi::Value BindGetFontDefault(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadFont(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadFont(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2457,7 +2460,7 @@ Napi::Value BindLoadFont(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadFontEx(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadFontEx(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        intFromValue(info, 1),
        (int *) pointerFromValue(info, 2),
        intFromValue(info, 3)
@@ -2478,7 +2481,7 @@ Napi::Value BindLoadFontFromImage(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadFontFromMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadFontFromMemory(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (const unsigned char *) pointerFromValue(info, 1),
        intFromValue(info, 2),
        intFromValue(info, 3),
@@ -2526,7 +2529,7 @@ Napi::Value BindExportFontAsCode(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportFontAsCode(
        FontFromValue(info, 0),
-       (const char *) stringFromValue(info, 10).c_str()
+       (const char *) stringFromValue(info, 10)
     )
   );
 }
@@ -2534,17 +2537,19 @@ Napi::Value BindExportFontAsCode(const Napi::CallbackInfo& info) {
 Napi::Value BindMeasureText(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     MeasureText(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        intFromValue(info, 1)
     )
   );
 }
 
 Napi::Value BindMeasureTextEx(const Napi::CallbackInfo& info) {
+  std::string val = info[10].As<Napi::String>().Utf8Value();
+  
   return ToValue(info.Env(),
     MeasureTextEx(
        FontFromValue(info, 0),
-       (const char *) stringFromValue(info, 10).c_str(),
+       val.c_str(),
        floatFromValue(info, 11),
        floatFromValue(info, 12)
     )
@@ -2590,7 +2595,7 @@ Napi::Value BindLoadUTF8(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadCodepoints(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadCodepoints(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (int *) pointerFromValue(info, 1)
     )
   );
@@ -2599,7 +2604,7 @@ Napi::Value BindLoadCodepoints(const Napi::CallbackInfo& info) {
 Napi::Value BindGetCodepointCount(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetCodepointCount(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2607,7 +2612,7 @@ Napi::Value BindGetCodepointCount(const Napi::CallbackInfo& info) {
 Napi::Value BindGetCodepoint(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetCodepoint(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (int *) pointerFromValue(info, 1)
     )
   );
@@ -2616,7 +2621,7 @@ Napi::Value BindGetCodepoint(const Napi::CallbackInfo& info) {
 Napi::Value BindGetCodepointNext(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetCodepointNext(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (int *) pointerFromValue(info, 1)
     )
   );
@@ -2625,7 +2630,7 @@ Napi::Value BindGetCodepointNext(const Napi::CallbackInfo& info) {
 Napi::Value BindGetCodepointPrevious(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GetCodepointPrevious(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (int *) pointerFromValue(info, 1)
     )
   );
@@ -2644,7 +2649,7 @@ Napi::Value BindTextCopy(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextCopy(
        (char *) pointerFromValue(info, 0),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -2652,8 +2657,8 @@ Napi::Value BindTextCopy(const Napi::CallbackInfo& info) {
 Napi::Value BindTextIsEqual(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextIsEqual(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -2661,7 +2666,7 @@ Napi::Value BindTextIsEqual(const Napi::CallbackInfo& info) {
 Napi::Value BindTextLength(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextLength(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2669,7 +2674,7 @@ Napi::Value BindTextLength(const Napi::CallbackInfo& info) {
 Napi::Value BindTextSubtext(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextSubtext(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        intFromValue(info, 1),
        intFromValue(info, 2)
     )
@@ -2679,9 +2684,9 @@ Napi::Value BindTextSubtext(const Napi::CallbackInfo& info) {
 Napi::Value BindTextReplace(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextReplace(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str(),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1),
+       (const char *) stringFromValue(info, 2)
     )
   );
 }
@@ -2689,8 +2694,8 @@ Napi::Value BindTextReplace(const Napi::CallbackInfo& info) {
 Napi::Value BindTextInsert(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextInsert(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str(),
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1),
        intFromValue(info, 2)
     )
   );
@@ -2701,7 +2706,7 @@ Napi::Value BindTextJoin(const Napi::CallbackInfo& info) {
     TextJoin(
        (const char **) pointerFromValue(info, 0),
        intFromValue(info, 1),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 2)
     )
   );
 }
@@ -2709,7 +2714,7 @@ Napi::Value BindTextJoin(const Napi::CallbackInfo& info) {
 Napi::Value BindTextSplit(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextSplit(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        charFromValue(info, 1),
        (int *) pointerFromValue(info, 2)
     )
@@ -2719,8 +2724,8 @@ Napi::Value BindTextSplit(const Napi::CallbackInfo& info) {
 Napi::Value BindTextFindIndex(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextFindIndex(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -2728,7 +2733,7 @@ Napi::Value BindTextFindIndex(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToUpper(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToUpper(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2736,7 +2741,7 @@ Napi::Value BindTextToUpper(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToLower(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToLower(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2744,7 +2749,7 @@ Napi::Value BindTextToLower(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToPascal(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToPascal(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2752,7 +2757,7 @@ Napi::Value BindTextToPascal(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToSnake(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToSnake(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2760,7 +2765,7 @@ Napi::Value BindTextToSnake(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToCamel(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToCamel(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2768,7 +2773,7 @@ Napi::Value BindTextToCamel(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToInteger(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToInteger(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2776,7 +2781,7 @@ Napi::Value BindTextToInteger(const Napi::CallbackInfo& info) {
 Napi::Value BindTextToFloat(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     TextToFloat(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2784,7 +2789,7 @@ Napi::Value BindTextToFloat(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadModel(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadModel(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -2825,7 +2830,7 @@ Napi::Value BindExportMesh(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportMesh(
        MeshFromValue(info, 0),
-       (const char *) stringFromValue(info, 17).c_str()
+       (const char *) stringFromValue(info, 17)
     )
   );
 }
@@ -2834,7 +2839,7 @@ Napi::Value BindExportMeshAsCode(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportMeshAsCode(
        MeshFromValue(info, 0),
-       (const char *) stringFromValue(info, 17).c_str()
+       (const char *) stringFromValue(info, 17)
     )
   );
 }
@@ -3050,7 +3055,7 @@ Napi::Value BindGetMasterVolume(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadWave(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadWave(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -3058,7 +3063,7 @@ Napi::Value BindLoadWave(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadWaveFromMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadWaveFromMemory(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (const unsigned char *) pointerFromValue(info, 1),
        intFromValue(info, 2)
     )
@@ -3076,7 +3081,7 @@ Napi::Value BindIsWaveValid(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadSound(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadSound(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -3109,7 +3114,7 @@ Napi::Value BindExportWave(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportWave(
        WaveFromValue(info, 0),
-       (const char *) stringFromValue(info, 5).c_str()
+       (const char *) stringFromValue(info, 5)
     )
   );
 }
@@ -3118,7 +3123,7 @@ Napi::Value BindExportWaveAsCode(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     ExportWaveAsCode(
        WaveFromValue(info, 0),
-       (const char *) stringFromValue(info, 5).c_str()
+       (const char *) stringFromValue(info, 5)
     )
   );
 }
@@ -3150,7 +3155,7 @@ Napi::Value BindLoadWaveSamples(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadMusicStream(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadMusicStream(
-       (const char *) stringFromValue(info, 0).c_str()
+       (const char *) stringFromValue(info, 0)
     )
   );
 }
@@ -3158,7 +3163,7 @@ Napi::Value BindLoadMusicStream(const Napi::CallbackInfo& info) {
 Napi::Value BindLoadMusicStreamFromMemory(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     LoadMusicStreamFromMemory(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        (const unsigned char *) pointerFromValue(info, 1),
        intFromValue(info, 2)
     )
@@ -4825,7 +4830,7 @@ Napi::Value BindGuiIconText(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiIconText(
        intFromValue(info, 0),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -4841,7 +4846,7 @@ Napi::Value BindGuiGetIcons(const Napi::CallbackInfo& info) {
 Napi::Value BindGuiLoadIcons(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiLoadIcons(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        boolFromValue(info, 1)
     )
   );
@@ -4851,7 +4856,7 @@ Napi::Value BindGuiWindowBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiWindowBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4860,7 +4865,7 @@ Napi::Value BindGuiGroupBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiGroupBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4869,7 +4874,7 @@ Napi::Value BindGuiLine(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiLine(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4878,7 +4883,7 @@ Napi::Value BindGuiPanel(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiPanel(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4898,7 +4903,7 @@ Napi::Value BindGuiScrollPanel(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiScrollPanel(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        RectangleFromValue(info, 5),
        (Vector2 *) pointerFromValue(info, 9),
        (Rectangle *) pointerFromValue(info, 10)
@@ -4910,7 +4915,7 @@ Napi::Value BindGuiLabel(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiLabel(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4919,7 +4924,7 @@ Napi::Value BindGuiButton(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiButton(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4928,7 +4933,7 @@ Napi::Value BindGuiLabelButton(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiLabelButton(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -4937,7 +4942,7 @@ Napi::Value BindGuiToggle(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiToggle(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (bool *) pointerFromValue(info, 5)
     )
   );
@@ -4947,7 +4952,7 @@ Napi::Value BindGuiToggleGroup(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiToggleGroup(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5)
     )
   );
@@ -4957,7 +4962,7 @@ Napi::Value BindGuiToggleSlider(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiToggleSlider(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5)
     )
   );
@@ -4967,7 +4972,7 @@ Napi::Value BindGuiCheckBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiCheckBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (bool *) pointerFromValue(info, 5)
     )
   );
@@ -4977,7 +4982,7 @@ Napi::Value BindGuiComboBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiComboBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5)
     )
   );
@@ -4987,7 +4992,7 @@ Napi::Value BindGuiDropdownBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiDropdownBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5),
        boolFromValue(info, 6)
     )
@@ -4998,7 +5003,7 @@ Napi::Value BindGuiSpinner(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiSpinner(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5),
        intFromValue(info, 6),
        intFromValue(info, 7),
@@ -5011,7 +5016,7 @@ Napi::Value BindGuiValueBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiValueBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5),
        intFromValue(info, 6),
        intFromValue(info, 7),
@@ -5024,7 +5029,7 @@ Napi::Value BindGuiValueBoxFloat(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiValueBoxFloat(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (char *) pointerFromValue(info, 5),
        (float *) pointerFromValue(info, 6),
        boolFromValue(info, 7)
@@ -5047,8 +5052,8 @@ Napi::Value BindGuiSlider(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiSlider(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
-       (const char *) stringFromValue(info, 5).c_str(),
+       (const char *) stringFromValue(info, 4),
+       (const char *) stringFromValue(info, 5),
        (float *) pointerFromValue(info, 6),
        floatFromValue(info, 7),
        floatFromValue(info, 8)
@@ -5060,8 +5065,8 @@ Napi::Value BindGuiSliderBar(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiSliderBar(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
-       (const char *) stringFromValue(info, 5).c_str(),
+       (const char *) stringFromValue(info, 4),
+       (const char *) stringFromValue(info, 5),
        (float *) pointerFromValue(info, 6),
        floatFromValue(info, 7),
        floatFromValue(info, 8)
@@ -5073,8 +5078,8 @@ Napi::Value BindGuiProgressBar(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiProgressBar(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
-       (const char *) stringFromValue(info, 5).c_str(),
+       (const char *) stringFromValue(info, 4),
+       (const char *) stringFromValue(info, 5),
        (float *) pointerFromValue(info, 6),
        floatFromValue(info, 7),
        floatFromValue(info, 8)
@@ -5086,7 +5091,7 @@ Napi::Value BindGuiStatusBar(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiStatusBar(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -5095,7 +5100,7 @@ Napi::Value BindGuiDummyRec(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiDummyRec(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str()
+       (const char *) stringFromValue(info, 4)
     )
   );
 }
@@ -5104,7 +5109,7 @@ Napi::Value BindGuiGrid(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiGrid(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        floatFromValue(info, 5),
        intFromValue(info, 6),
        (Vector2 *) pointerFromValue(info, 7)
@@ -5116,7 +5121,7 @@ Napi::Value BindGuiListView(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiListView(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (int *) pointerFromValue(info, 5),
        (int *) pointerFromValue(info, 6)
     )
@@ -5140,9 +5145,9 @@ Napi::Value BindGuiMessageBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiMessageBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
-       (const char *) stringFromValue(info, 5).c_str(),
-       (const char *) stringFromValue(info, 6).c_str()
+       (const char *) stringFromValue(info, 4),
+       (const char *) stringFromValue(info, 5),
+       (const char *) stringFromValue(info, 6)
     )
   );
 }
@@ -5151,9 +5156,9 @@ Napi::Value BindGuiTextInputBox(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiTextInputBox(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
-       (const char *) stringFromValue(info, 5).c_str(),
-       (const char *) stringFromValue(info, 6).c_str(),
+       (const char *) stringFromValue(info, 4),
+       (const char *) stringFromValue(info, 5),
+       (const char *) stringFromValue(info, 6),
        (char *) pointerFromValue(info, 7),
        intFromValue(info, 8),
        (bool *) pointerFromValue(info, 9)
@@ -5165,7 +5170,7 @@ Napi::Value BindGuiColorPicker(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiColorPicker(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (Color *) pointerFromValue(info, 5)
     )
   );
@@ -5175,7 +5180,7 @@ Napi::Value BindGuiColorPanel(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiColorPanel(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (Color *) pointerFromValue(info, 5)
     )
   );
@@ -5185,7 +5190,7 @@ Napi::Value BindGuiColorBarAlpha(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiColorBarAlpha(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (float *) pointerFromValue(info, 5)
     )
   );
@@ -5195,7 +5200,7 @@ Napi::Value BindGuiColorBarHue(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiColorBarHue(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (float *) pointerFromValue(info, 5)
     )
   );
@@ -5205,7 +5210,7 @@ Napi::Value BindGuiColorPickerHSV(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiColorPickerHSV(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (Vector3 *) pointerFromValue(info, 5)
     )
   );
@@ -5215,7 +5220,7 @@ Napi::Value BindGuiColorPanelHSV(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     GuiColorPanelHSV(
        RectangleFromValue(info, 0),
-       (const char *) stringFromValue(info, 4).c_str(),
+       (const char *) stringFromValue(info, 4),
        (Vector3 *) pointerFromValue(info, 5)
     )
   );
@@ -5442,8 +5447,8 @@ Napi::Value BindrlFramebufferComplete(const Napi::CallbackInfo& info) {
 Napi::Value BindrlLoadShaderCode(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     rlLoadShaderCode(
-       (const char *) stringFromValue(info, 0).c_str(),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 0),
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -5451,7 +5456,7 @@ Napi::Value BindrlLoadShaderCode(const Napi::CallbackInfo& info) {
 Napi::Value BindrlCompileShader(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     rlCompileShader(
-       (const char *) stringFromValue(info, 0).c_str(),
+       (const char *) stringFromValue(info, 0),
        intFromValue(info, 1)
     )
   );
@@ -5470,7 +5475,7 @@ Napi::Value BindrlGetLocationUniform(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     rlGetLocationUniform(
        unsignedintFromValue(info, 0),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -5479,7 +5484,7 @@ Napi::Value BindrlGetLocationAttrib(const Napi::CallbackInfo& info) {
   return ToValue(info.Env(),
     rlGetLocationAttrib(
        unsignedintFromValue(info, 0),
-       (const char *) stringFromValue(info, 1).c_str()
+       (const char *) stringFromValue(info, 1)
     )
   );
 }
@@ -5554,7 +5559,7 @@ void BindInitWindow(const Napi::CallbackInfo& info) {
   InitWindow(
      intFromValue(info, 0),
        intFromValue(info, 1),
-       (const char *) stringFromValue(info, 2).c_str()
+       (const char *) stringFromValue(info, 2)
   );
 }
 
@@ -5621,7 +5626,7 @@ void BindSetWindowIcons(const Napi::CallbackInfo& info) {
 
 void BindSetWindowTitle(const Napi::CallbackInfo& info) {
   SetWindowTitle(
-     (const char *) stringFromValue(info, 0).c_str()
+     (const char *) stringFromValue(info, 0)
   );
 }
 
@@ -5673,7 +5678,7 @@ void BindSetWindowFocused(const Napi::CallbackInfo& info) {
 
 void BindSetClipboardText(const Napi::CallbackInfo& info) {
   SetClipboardText(
-     (const char *) stringFromValue(info, 0).c_str()
+     (const char *) stringFromValue(info, 0)
   );
 }
 
@@ -5872,7 +5877,7 @@ void BindUnloadRandomSequence(const Napi::CallbackInfo& info) {
 
 void BindTakeScreenshot(const Napi::CallbackInfo& info) {
   TakeScreenshot(
-     (const char *) stringFromValue(info, 0).c_str()
+     (const char *) stringFromValue(info, 0)
   );
 }
 
@@ -5884,7 +5889,7 @@ void BindSetConfigFlags(const Napi::CallbackInfo& info) {
 
 void BindOpenURL(const Napi::CallbackInfo& info) {
   OpenURL(
-     (const char *) stringFromValue(info, 0).c_str()
+     (const char *) stringFromValue(info, 0)
   );
 }
 
@@ -6709,7 +6714,7 @@ void BindDrawFPS(const Napi::CallbackInfo& info) {
 
 void BindDrawText(const Napi::CallbackInfo& info) {
   DrawText(
-     (const char *) stringFromValue(info, 0).c_str(),
+     (const char *) stringFromValue(info, 0),
        intFromValue(info, 1),
        intFromValue(info, 2),
        intFromValue(info, 3),
@@ -6718,9 +6723,10 @@ void BindDrawText(const Napi::CallbackInfo& info) {
 }
 
 void BindDrawTextEx(const Napi::CallbackInfo& info) {
+  std::string val = info[10].As<Napi::String>().Utf8Value();
   DrawTextEx(
      FontFromValue(info, 0),
-       (const char *) stringFromValue(info, 10).c_str(),
+       val.c_str(),
        Vector2FromValue(info, 11),
        floatFromValue(info, 13),
        floatFromValue(info, 14),
@@ -6731,7 +6737,7 @@ void BindDrawTextEx(const Napi::CallbackInfo& info) {
 void BindDrawTextPro(const Napi::CallbackInfo& info) {
   DrawTextPro(
      FontFromValue(info, 0),
-       (const char *) stringFromValue(info, 10).c_str(),
+       (const char *) stringFromValue(info, 10),
        Vector2FromValue(info, 11),
        Vector2FromValue(info, 13),
        floatFromValue(info, 15),
@@ -6784,7 +6790,7 @@ void BindUnloadCodepoints(const Napi::CallbackInfo& info) {
 void BindTextAppend(const Napi::CallbackInfo& info) {
   TextAppend(
      (char *) pointerFromValue(info, 0),
-       (const char *) stringFromValue(info, 1).c_str(),
+       (const char *) stringFromValue(info, 1),
        (int *) pointerFromValue(info, 2)
   );
 }
@@ -7407,7 +7413,7 @@ void BindGuiSetStyle(const Napi::CallbackInfo& info) {
 
 void BindGuiLoadStyle(const Napi::CallbackInfo& info) {
   GuiLoadStyle(
-     (const char *) stringFromValue(info, 0).c_str()
+     (const char *) stringFromValue(info, 0)
   );
 }
 
@@ -7431,7 +7437,7 @@ void BindGuiDisableTooltip(const Napi::CallbackInfo& info) {
 
 void BindGuiSetTooltip(const Napi::CallbackInfo& info) {
   GuiSetTooltip(
-     (const char *) stringFromValue(info, 0).c_str()
+     (const char *) stringFromValue(info, 0)
   );
 }
 
@@ -8608,7 +8614,7 @@ Napi::Value BindImageDraw(const Napi::CallbackInfo& info) {
 Napi::Value BindImageDrawText(const Napi::CallbackInfo& info) {
   Image obj = ImageFromValue(info, 0);
   ImageDrawText(
-    &obj, (const char *) stringFromValue(info, 5).c_str(),
+    &obj, (const char *) stringFromValue(info, 5),
        intFromValue(info, 6),
        intFromValue(info, 7),
        intFromValue(info, 8),
@@ -8621,7 +8627,7 @@ Napi::Value BindImageDrawTextEx(const Napi::CallbackInfo& info) {
   Image obj = ImageFromValue(info, 0);
   ImageDrawTextEx(
     &obj, FontFromValue(info, 5),
-       (const char *) stringFromValue(info, 15).c_str(),
+       (const char *) stringFromValue(info, 15),
        Vector2FromValue(info, 16),
        floatFromValue(info, 18),
        floatFromValue(info, 19),
