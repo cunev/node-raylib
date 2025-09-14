@@ -85,7 +85,7 @@ const UnwrappedFuncArguments = (structs, func) => {
 
   return func.params
     .map((param) => {
-      const out = `${param.type.endsWith('*') ? ` (${param.type})` : ''} ${SanitizeTypeName(param.type)}FromValue(info, ${length})${SanitizeTypeName(param.type) == 'string' ? '.c_str()' : ''}`
+      const out = `${param.type.endsWith('*') ? ` (${param.type})` : ''} ${SanitizeTypeName(param.type)}FromValue(info, ${length})${param.type === 'const char *' ? '.c_str()' : ''}`
       length += TypeUnwrappedLength(structs, param.type)
       return out
     })
