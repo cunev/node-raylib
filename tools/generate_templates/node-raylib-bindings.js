@@ -5,96 +5,92 @@
  * @returns
  */
 const SanitizeTypeName = (name) => {
-  if (name === "const Vector3") {
-    return "Vector3";
+  if (name === 'const Vector3') {
+    return 'Vector3'
   }
-  if (name === "float[2]") {
-    return "pointer";
+  if (name === 'float[2]') {
+    return 'pointer'
   }
-  if (name === "char[32]") {
-    return "pointer";
+  if (name === 'char[32]') {
+    return 'pointer'
   }
-  if (name === "float[4]") {
-    return "pointer";
+  if (name === 'float[4]') {
+    return 'pointer'
   }
-  if (name === "unsigned int[4]") {
-    return "(unsigned int) pointer";
+  if (name === 'unsigned int[4]') {
+    return '(unsigned int) pointer'
   }
-  if (name === "Matrix[2]") {
-    return "pointer";
+  if (name === 'Matrix[2]') {
+    return 'pointer'
   }
-  if (name === "const char *") {
-    return "string";
+  if (name === 'const char *') {
+    return 'string'
   }
-  if (name.endsWith("*")) {
-    return "pointer";
+  if (name.endsWith('*')) {
+    return 'pointer'
   }
-  if (name.endsWith("Callback")) {
-    return "function";
+  if (name.endsWith('Callback')) {
+    return 'function'
   }
-  if (name === "Camera") {
-    return "Camera3D";
+  if (name === 'Camera') {
+    return 'Camera3D'
   }
-  if (name === "Quaternion") {
-    return "Vector4";
+  if (name === 'Quaternion') {
+    return 'Vector4'
   }
-  if (name === "Texture2D") {
-    return "Texture";
+  if (name === 'Texture2D') {
+    return 'Texture'
   }
-  return name.replace(/ /g, "");
-};
+  return name.replace(/ /g, '')
+}
 
 const TypeUnwrappedLength = (structs, type) => {
-  if (type === "Camera") {
-    type = "Camera3D";
+  if (type === 'Camera') {
+    type = 'Camera3D'
   }
-  if (type === "Texture2D") {
-    type = "Texture";
+  if (type === 'Texture2D') {
+    type = 'Texture'
   }
-  let properties = 0;
+  let properties = 0
   for (const struct of structs) {
     if (struct.name === type) {
       for (const field of struct.fields) {
-        properties += TypeUnwrappedLength(structs, field.type);
+        properties += TypeUnwrappedLength(structs, field.type)
       }
     }
   }
   if (properties === 0) {
     // primitive, not struct. return length 1
-    return 1;
+    return 1
   }
-  return properties;
-};
+  return properties
+}
 
 const UnwrappedStructProperties = (structs, struct) => {
-  let length = 0;
+  let length = 0
   return struct.fields
     .map((field) => {
-      const out = `${
-        field.type.endsWith("*") ? ` (${field.type})` : ""
-      } ${SanitizeTypeName(field.type)}FromValue(info, index + ${length})`;
-      length += TypeUnwrappedLength(structs, field.type);
-      return out;
+      const out = `${field.type.endsWith('*') ? ` (${field.type})` : ''} ${SanitizeTypeName(field.type)}FromValue(info, index + ${length})`
+      length += TypeUnwrappedLength(structs, field.type)
+      return out
     })
-    .join(",\n    ");
-};
+    .join(',\n    ')
+}
 
 const UnwrappedFuncArguments = (structs, func) => {
   if (!func.params) {
-    return "";
+    return ''
   }
-  let length = 0;
+  let length = 0
 
   return func.params
     .map((param) => {
-      const out = `${
-        param.type.endsWith("*") ? ` (${param.type})` : ""
-      } ${SanitizeTypeName(param.type)}FromValue(info, ${length})`;
-      length += TypeUnwrappedLength(structs, param.type);
-      return out;
+      const out = `${param.type.endsWith('*') ? ` (${param.type})` : ''} ${SanitizeTypeName(param.type)}FromValue(info, ${length})${SanitizeTypeName(param.type) == 'string' ? '.c_str()' : ''}`
+      length += TypeUnwrappedLength(structs, param.type)
+      return out
     })
-    .join(",\n      ");
-};
+    .join(',\n      ')
+}
 
 /**
  *
@@ -102,13 +98,11 @@ const UnwrappedFuncArguments = (structs, func) => {
  * @returns
  */
 const FromValue = (structs, struct) => `
-inline ${struct.name} ${SanitizeTypeName(
-  struct.name
-)}FromValue(const Napi::CallbackInfo& info, int index) {
+inline ${struct.name} ${SanitizeTypeName(struct.name)}FromValue(const Napi::CallbackInfo& info, int index) {
   return {
     ${UnwrappedStructProperties(structs, struct)}
   };
-}`;
+}`
 
 /**
  *
@@ -118,13 +112,9 @@ inline ${struct.name} ${SanitizeTypeName(
 const ToValue = (struct) => `
 inline Napi::Value ToValue(Napi::Env env, ${struct.name} obj) {
   Napi::Object out = Napi::Object::New(env);
-  ${struct.fields
-    .map(
-      (field) => `out.Set("${field.name}", ToValue(env, obj.${field.name}));`
-    )
-    .join("\n  ")}
+  ${struct.fields.map((field) => `out.Set("${field.name}", ToValue(env, obj.${field.name}));`).join('\n  ')}
   return out;
-}`;
+}`
 
 /**
  *
@@ -138,7 +128,7 @@ Napi::Value Bind${func.name}(const Napi::CallbackInfo& info) {
       ${UnwrappedFuncArguments(structs, func)}
     )
   );
-}`;
+}`
 
 /**
  *
@@ -150,7 +140,7 @@ void Bind${func.name}(const Napi::CallbackInfo& info) {
   ${func.name}(
     ${UnwrappedFuncArguments(structs, func)}
   );
-}`;
+}`
 
 /**
  *
@@ -158,41 +148,38 @@ void Bind${func.name}(const Napi::CallbackInfo& info) {
  * @returns
  */
 const BindFunctionPassByRef = (structs, func) => {
-  let returnType = func.params[0].type;
-  returnType = returnType.replace(" *", "");
-  let length = TypeUnwrappedLength(structs, returnType);
+  let returnType = func.params[0].type
+  returnType = returnType.replace(' *', '')
+  let length = TypeUnwrappedLength(structs, returnType)
   return `
 Napi::Value Bind${func.name}(const Napi::CallbackInfo& info) {
   ${returnType} obj = ${returnType}FromValue(info, 0);
   ${func.name}(
     ${
       func.params.length === 1
-        ? "&obj\n"
-        : ["&obj"].concat(
+        ? '&obj\n'
+        : ['&obj'].concat(
             func.params
               ?.filter((param, index) => index !== 0)
               .map((param) => {
-                const out = `${
-                  param.type.endsWith("*") ? ` (${param.type})` : ""
-                } ${SanitizeTypeName(param.type)}FromValue(info, ${length})`;
-                length += TypeUnwrappedLength(structs, param.type);
-                return out;
+                const out = `${param.type.endsWith('*') ? ` (${param.type})` : ''} ${SanitizeTypeName(param.type)}FromValue(info, ${length})`
+                length += TypeUnwrappedLength(structs, param.type)
+                return out
               })
-              .join(",\n      ")
+              .join(',\n      ')
           )
     }
   );
   return ToValue(info.Env(), obj);
-}`;
-};
+}`
+}
 
 /**
  *
  * @param {*} func
  * @returns
  */
-const ExportFunctionBinding = (func) =>
-  `exports.Set("Bind${func.name}", Napi::Function::New(env, Bind${func.name}));`;
+const ExportFunctionBinding = (func) => `exports.Set("Bind${func.name}", Napi::Function::New(env, Bind${func.name}));`
 
 module.exports = ({ functions, structs, enums, blocklist, byreflist }) => `
 // GENERATED CODE: DO NOT MODIFY
@@ -280,12 +267,8 @@ inline unsigned long long unsignedlonglongFromValue(const Napi::CallbackInfo& in
 inline bool boolFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Boolean>();
 }
-inline const char * stringFromValue(const Napi::CallbackInfo& info, int index) {
-  std::string val = info[index].As<Napi::String>().Utf8Value();
-  const std::string::size_type size = val.size();
-  char *buffer = new char[size + 1];   //we need extra char for NUL
-  memcpy(buffer, val.c_str(), size + 1);
-  return buffer;
+inline std::string stringFromValue(const Napi::CallbackInfo& info, int index) {
+  return info[index].As<Napi::String>().Utf8Value();
 }
 inline char charFromValue(const Napi::CallbackInfo& info, int index) {
   return info[index].As<Napi::Number>().Uint32Value();
@@ -312,22 +295,16 @@ inline rlVertexBuffer rlVertexBufferFromValue(const Napi::CallbackInfo& info, in
 
 // Convert structs from Napi::Values in info[] arguments
 ${structs
-  .filter(
-    ({ name }) =>
-      !blocklist.includes(name) &&
-      name !== "rlVertexBuffer" &&
-      name !== "AutomationEvent" &&
-      name !== "ModelAnimation"
-  )
+  .filter(({ name }) => !blocklist.includes(name) && name !== 'rlVertexBuffer' && name !== 'AutomationEvent' && name !== 'ModelAnimation')
   .map((struct) => {
-    return FromValue(structs, struct);
+    return FromValue(structs, struct)
   })
-  .join("\n")}
+  .join('\n')}
 // Convert structs to Napi::Objects for output to JS
 ${structs
   .filter(({ name }) => !blocklist.includes(name))
   .map(ToValue)
-  .join("\n")}
+  .join('\n')}
 
 inline Texture2D Texture2DFromValue(const Napi::CallbackInfo& info, int index) {
   return (Texture2D) TextureFromValue(info, index);
@@ -362,27 +339,27 @@ inline ModelAnimation ModelAnimationFromValue(const Napi::CallbackInfo& info, in
 ${functions
   .filter(({ name }) => !blocklist.includes(name))
   .filter(({ name }) => !byreflist.includes(name))
-  .filter((func) => func.returnType !== "void")
+  .filter((func) => func.returnType !== 'void')
   .map((func) => {
-    return BindFunction(structs, func);
+    return BindFunction(structs, func)
   })
-  .join("\n")}
+  .join('\n')}
 ${functions
   .filter(({ name }) => !blocklist.includes(name))
   .filter(({ name }) => !byreflist.includes(name))
-  .filter((func) => func.returnType === "void")
+  .filter((func) => func.returnType === 'void')
   .map((func) => {
-    return BindVoidFunction(structs, func);
+    return BindVoidFunction(structs, func)
   })
-  .join("\n")}
+  .join('\n')}
 // By-Reference function bindings
 ${functions
   .filter(({ name }) => !blocklist.includes(name))
   .filter(({ name }) => byreflist.includes(name))
   .map((func) => {
-    return BindFunctionPassByRef(structs, func);
+    return BindFunctionPassByRef(structs, func)
   })
-  .join("\n")}
+  .join('\n')}
 
 // Shader Functions
 void BindSetShaderFloat(const Napi::CallbackInfo& info) {
@@ -446,7 +423,7 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
   ${functions
     .filter(({ name }) => !blocklist.includes(name))
     .map(ExportFunctionBinding)
-    .join("\n  ")}
+    .join('\n  ')}
 
   exports.Set("BindSetShaderFloat", Napi::Function::New(env, BindSetShaderFloat));
   exports.Set("BindSetShaderInt", Napi::Function::New(env, BindSetShaderInt));
@@ -458,4 +435,4 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
 }
 
 NODE_API_MODULE(addon, Init);
-`;
+`
